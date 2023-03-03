@@ -69,13 +69,19 @@ impl PrimeTable {
 
     pub fn generate_primes(&mut self, num: u64) {
         let prev_primes = self.stored_primes.clone();
+
         if prev_primes.is_empty() {
             (1..=num)
                 .filter(|uint| prime_math::is_prime(*uint, &prev_primes))
                 .for_each(|new_prime| self.stored_primes.push(new_prime));
             return;
         }
-        (1..=num)
+
+        if num < prev_primes[prev_primes.len() - 1] {
+            return;
+        }
+
+        (prev_primes[prev_primes.len() - 1]..=num)
             .filter(|uint| prime_math::is_prime(*uint, &prev_primes))
             .filter(|prime| !prev_primes.contains(prime))
             .for_each(|new_prime| self.stored_primes.push(new_prime));

@@ -16,6 +16,10 @@ const fn floored_sqrt(x: u64) -> u64 {
 }
 
 fn is_stored_prime(num: u64, primes: &Vec<u64>) -> bool {
+    if num > primes[primes.len() - 1] {
+        return false;
+    }
+
     let mut upper = primes.len() - 1;
     let mut lower: usize = 0;
     while lower <= upper {
