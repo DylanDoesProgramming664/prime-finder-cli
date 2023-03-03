@@ -37,8 +37,8 @@ impl PrimeTable {
 
         fs::write("data/primes.toml", primes).map_or_else(
             |_| {
-                println!("Could not write primes to 'data/primes.toml'");
-                exit(1);
+                _ = fs::create_dir("data");
+                self.save();
             },
             |result| result,
         );
