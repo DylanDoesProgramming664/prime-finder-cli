@@ -9,7 +9,7 @@ use crate::prime_math;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PrimeTable {
-    pub stored_primes: Vec<u32>,
+    pub stored_primes: Vec<u64>,
 }
 
 impl PrimeTable {
@@ -20,7 +20,7 @@ impl PrimeTable {
     }
 
     #[must_use]
-    pub fn from_vec(vec: Vec<u32>) -> Self {
+    pub fn from_vec(vec: Vec<u64>) -> Self {
         return Self {
             stored_primes: Vec::from_iter(vec),
         };
@@ -28,8 +28,8 @@ impl PrimeTable {
 
     pub fn save(&mut self) {
         let primes = toml::to_string(self).map_or_else(
-            |_| {
-                println!("Error: Could not convert {self:?} to a string.");
+            |x| {
+                println!("Error: {x:?}");
                 exit(1);
             },
             |primes| primes,
@@ -37,7 +37,7 @@ impl PrimeTable {
 
         fs::write("data/primes.toml", primes).map_or_else(
             |_| {
-                _ = fs::create_dir("data");
+                let _data_path = fs::create_dir("data");
                 self.save();
             },
             |result| result,
@@ -67,27 +67,27 @@ impl PrimeTable {
         );
     }
 
-    pub fn generate_primes(&mut self, num: u32) {
+    pub fn generate_primes(&mut self, num: u64) {
         let prev_primes = self.stored_primes.clone();
         if prev_primes.is_empty() {
             (1..=num)
-                .filter(|uint| prime_math::is_prime(*uint))
+                .filter(|uint| prime_math::is_prime(*uint, &prev_primes))
                 .for_each(|new_prime| self.stored_primes.push(new_prime));
             return;
         }
         (1..=num)
-            .filter(|uint| prime_math::is_prime(*uint))
+            .filter(|uint| prime_math::is_prime(*uint, &prev_primes))
             .filter(|prime| !prev_primes.contains(prime))
             .for_each(|new_prime| self.stored_primes.push(new_prime));
     }
 
-    pub fn get_primes_in_range(&mut self, input: u32) -> Vec<u32> {
+    pub fn get_primes_in_range(&mut self, input: u64) -> Vec<u64> {
         let output_vec = self
             .stored_primes
             .iter()
             .filter(|prime| **prime <= input)
             .copied()
-            .collect::<Vec<u32>>();
+            .collect::<Vec<u64>>();
         return output_vec;
     }
 }

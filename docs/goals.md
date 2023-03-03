@@ -8,7 +8,7 @@
     [x] Use the serde to add Serializse & Deserialize traits to PrimeTable struct.
     [x] Add save and load functions using toml and fs libraries.
     [x] Add func to generate primes, and push newly discovered primes to `self.stored_primes`.
-    [x] Add func to return a Vec of primes up to an input u32.
+    [x] Add func to return a Vec of primes up to an input u64.
 
 [x] Make REPL in main.rs:
     [x] Use reedline to create prompt and read stdin.
