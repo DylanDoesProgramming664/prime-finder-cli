@@ -1,79 +1,59 @@
 #![allow(unused_imports, dead_code)]
 
-use serde::{Deserialize, Serialize};
-use std::{fs, io::Write, process::exit};
+pub mod prime_math;
+pub mod prime_table;
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct PrimeTable {
-    pub stored_primes: Vec<u32>,
-}
+use std::process::exit;
 
-impl PrimeTable {
-    pub fn insert_new_prime(&mut self, prime: u32) {
-        self.stored_primes.push(prime);
-    }
+use crate::prime_table::PrimeTable;
+use reedline::{DefaultPrompt, DefaultPromptSegment, Reedline, Signal};
 
-    #[allow(unused_variables)]
-    pub fn save_primes(&mut self) {
-        let primes = toml::to_string(self).map_or_else(
-            |_| {
-                println!("Error: Could not convert {self:?} to a string.");
-                exit(1);
-            },
-            |primes| primes,
-        );
-
-        fs::write("data/primes.toml", primes).map_or_else(
-            |_| {
-                println!("Could not write primes to 'data/primes.toml'");
-                exit(1);
-            },
-            |result| result,
-        );
-    }
-}
-
-impl Default for PrimeTable {
-    fn default() -> Self {
-        {
-            return Self {
-                stored_primes: Vec::new(),
-            };
-        }
-    }
-}
-
-const fn floored_sqrt(x: u32) -> u32 {
-    if let 0..=1 = x {
-        return x;
-    }
-
-    let mut guess = x >> 1;
-
-    while guess * guess > x {
-        guess = (guess + x / guess) >> 1;
-    }
-
-    return guess;
-}
 fn main() {
-    println!("Hello, world!");
-}
+    println!("Type an unsigned integer in the prompt to check for all primes up to that number.");
+    let mut reader = Reedline::create();
+    let prompt = DefaultPrompt::new(
+        DefaultPromptSegment::Basic("input".to_owned()),
+        DefaultPromptSegment::Empty,
+    );
 
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-
-    #[test]
-    fn sqrt_n() {
-        let mut floored_sqrts: Vec<u32> = Vec::new();
-
-        #[allow(clippy::cast_precision_loss, clippy::cast_sign_loss)]
-        (0..1000u32).for_each(|i| floored_sqrts.push((i as f32).sqrt().floor() as u32));
-
-        (0..floored_sqrts.len()).for_each(|i| {
-            assert_eq!(floored_sqrt(i as u32), floored_sqrts[i]);
-        });
+    loop {
+        let sig = reader.read_line(&prompt);
+        match sig {
+            Ok(Signal::Success(buffer)) => {
+                let num: u32 = if let Ok(num) = buffer.parse::<u32>() {
+                    num
+                } else {
+                    println!("Input is not an unsigned integer");
+                    continue;
+                };
+                let mut prime_table = PrimeTable::load();
+                {
+                    let this = &mut prime_table;
+                    let prev_primes = this.stored_primes.clone();
+                    if prev_primes.is_empty() {
+                        (1..=num)
+                            .filter(|uint| prime_math::is_prime(*uint))
+                            .for_each(|new_prime| this.stored_primes.push(new_prime));
+                        return;
+                    }
+                    (1..=num)
+                        .filter(|uint| prime_math::is_prime(*uint))
+                        .filter(|prime| !prev_primes.contains(prime))
+                        .for_each(|new_prime| this.stored_primes.push(new_prime));
+                };
+                println!(
+                    "Primes below {num}: {:?}",
+                    prime_table.get_primes_in_range(num)
+                );
+                prime_table.save();
+            }
+            Ok(Signal::CtrlD | Signal::CtrlC) => {
+                println!("\nAborted!");
+                break;
+            }
+            Err(x) => {
+                println!("Error: {x:?}");
+            }
+        }
     }
 }
