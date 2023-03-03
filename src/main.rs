@@ -3,7 +3,7 @@
 pub mod prime_math;
 pub mod prime_table;
 
-use std::process::exit;
+use std::{fs, process::exit};
 
 use crate::prime_table::PrimeTable;
 use reedline::{DefaultPrompt, DefaultPromptSegment, Reedline, Signal};
@@ -27,22 +27,9 @@ fn main() {
                     continue;
                 };
                 let mut prime_table = PrimeTable::load();
-                {
-                    let this = &mut prime_table;
-                    let prev_primes = this.stored_primes.clone();
-                    if prev_primes.is_empty() {
-                        (1..=num)
-                            .filter(|uint| prime_math::is_prime(*uint))
-                            .for_each(|new_prime| this.stored_primes.push(new_prime));
-                        return;
-                    }
-                    (1..=num)
-                        .filter(|uint| prime_math::is_prime(*uint))
-                        .filter(|prime| !prev_primes.contains(prime))
-                        .for_each(|new_prime| this.stored_primes.push(new_prime));
-                };
+                prime_table.generate_primes(num);
                 println!(
-                    "Primes below {num}: {:?}",
+                    "Primes up to {num}: {:?}",
                     prime_table.get_primes_in_range(num)
                 );
                 prime_table.save();

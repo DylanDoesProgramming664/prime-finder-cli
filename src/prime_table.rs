@@ -60,8 +60,8 @@ impl PrimeTable {
         }
         return toml::from_str(&data).map_or_else(
             |_| {
-                println!("Could not map data to a PrimeTable struct.");
-                exit(1);
+                println!("Could not map data to a PrimeTable struct. Generating new PrimeTable.");
+                Self::new()
             },
             |primes| primes,
         );
