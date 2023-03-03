@@ -20,7 +20,7 @@ fn main() {
         let sig = reader.read_line(&prompt);
         match sig {
             Ok(Signal::Success(buffer)) => {
-                let num: u32 = if let Ok(num) = buffer.parse::<u32>() {
+                let num: u64 = if let Ok(num) = buffer.parse::<u64>() {
                     num
                 } else {
                     println!("Input is not an unsigned integer");
