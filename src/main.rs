@@ -4,17 +4,11 @@ use serde::{Deserialize, Serialize};
 use std::{fs, io::Write, process::exit};
 
 #[derive(Debug, Serialize, Deserialize)]
-struct PrimeTable {
+pub struct PrimeTable {
     pub stored_primes: Vec<u32>,
 }
 
 impl PrimeTable {
-    pub fn new() -> Self {
-        return Self {
-            stored_primes: vec![2],
-        };
-    }
-
     pub fn insert_new_prime(&mut self, prime: u32) {
         self.stored_primes.push(prime);
     }
@@ -36,6 +30,16 @@ impl PrimeTable {
             },
             |result| result,
         );
+    }
+}
+
+impl Default for PrimeTable {
+    fn default() -> Self {
+        {
+            return Self {
+                stored_primes: Vec::new(),
+            };
+        }
     }
 }
 
@@ -64,12 +68,12 @@ mod tests {
     #[test]
     fn sqrt_n() {
         let mut floored_sqrts: Vec<u32> = Vec::new();
-        for i in 0..1000 {
-            floored_sqrts.push((i as f32).sqrt().floor() as u32);
-        }
 
-        for i in 0..floored_sqrts.len() {
+        #[allow(clippy::cast_precision_loss, clippy::cast_sign_loss)]
+        (0..1000u32).for_each(|i| floored_sqrts.push((i as f32).sqrt().floor() as u32));
+
+        (0..floored_sqrts.len()).for_each(|i| {
             assert_eq!(floored_sqrt(i as u32), floored_sqrts[i]);
-        }
+        });
     }
 }
