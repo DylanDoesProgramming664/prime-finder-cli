@@ -68,32 +68,37 @@ impl PrimeTable {
     }
 
     pub fn generate_primes(&mut self, num: u64) {
+        if num == 0 || num == 1 {
+            return;
+        }
+
         let prev_primes = self.stored_primes.clone();
 
         if prev_primes.is_empty() {
-            (1..=num)
+            (2..=num)
                 .filter(|uint| prime_math::is_prime(*uint, &prev_primes))
                 .for_each(|new_prime| self.stored_primes.push(new_prime));
             return;
         }
 
-        if num < prev_primes[prev_primes.len() - 1] {
+        if num <= prev_primes[prev_primes.len() - 1] {
             return;
         }
 
-        (prev_primes[prev_primes.len() - 1]..=num)
+        (prev_primes[prev_primes.len() - 1] + 1..=num)
             .filter(|uint| prime_math::is_prime(*uint, &prev_primes))
-            .filter(|prime| !prev_primes.contains(prime))
             .for_each(|new_prime| self.stored_primes.push(new_prime));
     }
 
     pub fn get_primes_in_range(&mut self, input: u64) -> Vec<u64> {
-        let output_vec = self
-            .stored_primes
-            .iter()
-            .filter(|prime| **prime <= input)
-            .copied()
-            .collect::<Vec<u64>>();
+        let mut output_vec: Vec<u64> = Vec::new();
+        for i in &self.stored_primes {
+            if *i <= input {
+                output_vec.push(*i);
+                continue;
+            }
+            break;
+        }
         return output_vec;
     }
 }

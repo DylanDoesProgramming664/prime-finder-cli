@@ -30,7 +30,11 @@ fn main() {
                 prime_table.generate_primes(num);
                 println!(
                     "Primes up to {num}: {:?}",
-                    prime_table.get_primes_in_range(num)
+                    &prime_table.get_primes_in_range(num)
+                );
+                println!(
+                    "Num primes up to {num}: {:?}",
+                    prime_table.get_primes_in_range(num).len()
                 );
                 prime_table.save();
             }

@@ -1,14 +1,14 @@
 use crate::prime_table::PrimeTable;
 
 #[must_use]
-const fn floored_sqrt(x: u64) -> u64 {
-    if let 0..=1 = x {
+fn floored_sqrt(x: u64) -> u64 {
+    if x == 0 || x == 1 {
         return x;
     }
 
     let mut guess = x >> 1;
 
-    while guess * guess > x {
+    while guess > x / guess {
         guess = (guess + x / guess) >> 1;
     }
 
@@ -16,25 +16,15 @@ const fn floored_sqrt(x: u64) -> u64 {
 }
 
 fn is_stored_prime(num: u64, primes: &Vec<u64>) -> bool {
+    if primes.is_empty() {
+        return false;
+    }
+
     if num > primes[primes.len() - 1] {
         return false;
     }
 
-    let mut upper = primes.len() - 1;
-    let mut lower: usize = 0;
-    while lower <= upper {
-        let mid = (upper + lower) >> 1;
-        if primes[mid] < num {
-            lower = mid + 1;
-            continue;
-        } else if primes[mid] > num {
-            upper = mid - 1;
-        } else {
-            return true;
-        }
-    }
-
-    return false;
+    return true;
 }
 
 #[must_use]
@@ -52,9 +42,17 @@ pub fn is_prime(num: u64, primes: &Vec<u64>) -> bool {
         return true;
     }
 
+    let iter = match primes.is_empty() {
+        true => (2..=upper).collect::<Vec<u64>>(),
+        false => primes.clone().to_owned(),
+    };
+
     #[allow(clippy::cast_precision_loss, clippy::cast_sign_loss)]
-    for i in 2..=upper {
-        if (num as f32) % (i as f32) == 0f32 {
+    for i in iter {
+        if i > upper {
+            break;
+        }
+        if num % i == 0 {
             return false;
         }
     }
